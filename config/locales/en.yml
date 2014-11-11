@@ -1,0 +1,3 @@
+en:
+  label_coassign_custom_field_id: "Coassignees integer custom field ID"
+  label_coassign_role_id: "Role ID for automatically added coassignees"
