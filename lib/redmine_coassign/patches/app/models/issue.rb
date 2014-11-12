@@ -8,12 +8,28 @@ module CoassignPlugin
 			base.class_eval do
 				unloadable
 
+				def visible_condition_with_coassignees(user, options={})
+					return visible_condition_without_coassignees(user, options)
+				end
+
 				alias_method_chain :visible?, :coassignees
 				alias_method_chain :editable?, :coassignees
+
+				class << self
+					alias_method_chain :visible_condition, :coassignees
+				end
 			end
 		end
 
 		module ClassMethods
+			def visible_condition_with_coassignees(user, options={})
+				current_uid = (user || User.current).id
+
+				issues = Issue.joins(:custom_values).where('custom_values.custom_field_id' => Setting.plugin_redmine_coassign['coassign_custom_field_id'].to_i, 'custom_values.value' => current_uid)
+
+				return visible_condition_without_coassignees(user, options) unless issues.count > 0
+				return "(" + visible_condition_without_coassignees(user, options) + ") OR (#{Issue.table_name}.id IN (#{issues.collect(&:id).join(',')}))"
+			end
 		end
 
 		module InstanceMethods
