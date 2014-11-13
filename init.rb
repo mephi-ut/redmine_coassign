@@ -6,6 +6,7 @@ require 'redmine_coassign/patches/app/models/issue.rb'
 require 'redmine_coassign/patches/app/models/project.rb'
 require 'redmine_coassign/patches/app/models/user.rb'
 require 'redmine_coassign/patches/app/models/query.rb'
+#require 'redmine_coassign/patches/app/helper/my_helper.rb'
 
 Redmine::Plugin.register :redmine_coassign do
 	name 'Coassign plugin'

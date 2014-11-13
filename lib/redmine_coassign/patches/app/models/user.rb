@@ -21,12 +21,17 @@ module CoassignPlugin
 
 				if action.is_a?(Hash)
 					return false unless action[:controller] == "issues"
-					return false unless action[:action] == "index" || action[:action] == "show"
-				elsif action != :view_issues
+					return false unless action[:action] == "index" || action[:action] == "show" || action[:action] == 'new'
+				elsif action != :view_issues && action != :edit_issues
+					#Rails.logger.info(action.to_yaml)
+					#Rails.logger.info(context.to_yaml)
 					return false
 				end
 
-				return context.visible_due_coassignees_plugin?(User.current)
+				is_allowed = context.visible_due_coassignees_plugin?(User.current)
+
+				#Rails.logger.info(is_allowed.to_yaml)
+				return is_allowed
 			end
 		end
 	end
