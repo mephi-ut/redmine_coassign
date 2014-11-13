@@ -58,10 +58,30 @@ module CoassignPlugin
 				@available_filters
 			end
 
+			def value2uid(value)
+				return User.current.id if value == 'me'
+				return value.to_i
+			end
+
+			def value2uids(value)
+				uids = []
+
+				if value.kind_of?(Array)
+					value.each do |v|
+						uids << value2uid(v)
+					end
+				else
+					uids << value2uid(value)
+				end
+
+				return uids
+			end
+
 			def sql_for_assignee_field(field, operator, value)
 				Rails.logger.info(value.to_yaml)
 
-				uid = User.current.id
+				uids = value2uids(value)
+
 				if operator == '='
 					op = '='
 					inop = 'IN'
@@ -72,10 +92,10 @@ module CoassignPlugin
 					whereop = 'AND'
 				end
 
-				issues = Issue.joins(:custom_values).where('custom_values.custom_field_id' => Setting.plugin_redmine_coassign['coassign_custom_field_id'].to_i, 'custom_values.value' => uid)
+				issues = Issue.joins(:custom_values).where('custom_values.custom_field_id' => Setting.plugin_redmine_coassign['coassign_custom_field_id'].to_i, 'custom_values.value' => uids)
 
-				return "#{Issue.table_name}.assigned_to_id #{op} #{uid}" unless issues.count > 0
-				return "(#{Issue.table_name}.assigned_to_id #{op} #{uid} #{whereop} #{Issue.table_name}.id #{inop} (#{issues.collect(&:id).join(',')}))"
+				return  "#{Issue.table_name}.assigned_to_id #{inop} (#{uids.join(',')})" unless issues.count > 0
+				return "(#{Issue.table_name}.assigned_to_id #{inop} (#{uids.join(',')}) #{whereop} #{Issue.table_name}.id #{inop} (#{issues.collect(&:id).join(',')}))"
 			end
 
 		end
