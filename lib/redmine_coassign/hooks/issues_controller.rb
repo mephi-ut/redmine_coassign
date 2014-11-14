@@ -30,6 +30,7 @@ class CoassignPluginListener < Redmine::Hook::Listener
 		unless role_id.nil? || role_id.empty? || role_id == '1'
 			(issue.custom_field_value(Setting.plugin_redmine_coassign['coassign_custom_field_id'].to_i) || []).each do |uid_s|
 				uid = uid_s.to_i
+				next if uid < 1
 				user = User.find(uid)
 				next if user.nil?
 
