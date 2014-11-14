@@ -38,10 +38,16 @@ module CoassignPlugin
 			def notified_users_with_coassignees
 				notified = notified_users_without_coassignees
 
-				coassignees = User.find(self.custom_field_value(Setting.plugin_redmine_coassign['coassign_custom_field_id'].to_i))
+				uids = self.custom_field_value(Setting.plugin_redmine_coassign['coassign_custom_field_id'].to_i)
+				return notified if uids.nil?
+				if uids.is_a?(Array)
+					uids.shift if uids.first.to_i < 1
+					return notified if uids.count < 1
+				end
+
+				coassignees = User.find(uids)
 				coassignees = coassignees.select {|u| u.active? && u.notify_about?(self)}
 				coassignees.reject! {|user| !visible?(user)}
-				Rails.logger.info(coassignees.to_yaml)
 
 				notified += coassignees
 
