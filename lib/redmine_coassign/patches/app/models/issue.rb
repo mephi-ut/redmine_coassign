@@ -14,6 +14,7 @@ module CoassignPlugin
 
 				alias_method_chain :visible?, :coassignees
 				alias_method_chain :editable?, :coassignees
+				alias_method_chain :new_statuses_allowed_to, :coassignees
 
 				class << self
 					alias_method_chain :visible_condition, :coassignees
@@ -58,6 +59,44 @@ module CoassignPlugin
 
 				visible = is_coassignee?(user)
 				return visible
+			end
+
+			def new_statuses_allowed_to_with_coassignees(user=User.current, include_default=false)
+				statuses = new_statuses_allowed_to_without_coassignees(user, include_default)
+
+				return statuses if new_record? && @copied_from
+				return statuses if self.assigned_to_id == user.id
+				return statuses unless self.is_coassignee?(user)
+
+				initial_status = nil
+				if new_record?
+					initial_status = IssueStatus.default
+				elsif status_id_was
+					initial_status = IssueStatus.find_by_id(status_id_was)
+				end
+				initial_status ||= status
+
+				#Rails.logger.info(statuses.to_yaml)
+
+				statuses_additional = initial_status.find_new_statuses_allowed_to(
+					user.roles_for_project(project),
+					tracker,
+					false,
+					true
+				)
+
+				#Rails.logger.info(statuses_additional.to_yaml)
+
+				statuses_additional << initial_status if statuses.empty? unless statuses_additional.empty?
+				statuses_additional = statuses_additional.compact
+				statuses_additional = blocked? ? statuses_additional.reject {|s| s.is_closed?} : statuses_additional
+
+				statuses = statuses + statuses_additional
+				statuses = statuses.uniq.sort
+
+				#Rails.logger.info(statuses.to_yaml)
+
+				return statuses
 			end
 		end
 	end

@@ -14,11 +14,15 @@ module CoassignPlugin
 
 		module InstanceMethods
 			def authorize_with_coassign(ctrl = params[:controller], action = params[:action], global = false)
-				return authorize_without_coassign(ctrl, action, global)
-
 				if    (ctrl == "projects" && action == "show")
 				elsif (ctrl == "issues"   && action == "show")
+					if @issue.is_coassignee?(User.current)
+						return true
+					end
 				end
+
+
+				return authorize_without_coassign(ctrl, action, global)
 			end
 		end
 	end

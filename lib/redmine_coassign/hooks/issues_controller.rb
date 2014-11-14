@@ -39,7 +39,8 @@ class CoassignPluginListener < Redmine::Hook::Listener
 				member.roles  += [Role.find(role_id)]
 				member.save
 
-				issue.add_watcher(user)
+				#Rails.logger.info(user.to_yaml)
+				issue.add_watcher(user) unless issue.watched_by?(user)
 			end
 		end
 	end

@@ -78,7 +78,7 @@ module CoassignPlugin
 			end
 
 			def sql_for_assignee_field(field, operator, value)
-				Rails.logger.info(value.to_yaml)
+				#Rails.logger.info(value.to_yaml)
 
 				uids = value2uids(value)
 

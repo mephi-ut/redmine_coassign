@@ -16,15 +16,17 @@ module CoassignPlugin
 			def allowed_to_with_coassignees?(action, context, options={}, &block)
 				is_allowed = allowed_to_without_coassignees?(action, context, options, &block)
 				return true if is_allowed
+				return false
 
+				#return true
+				#Rails.logger.info(action.to_yaml)
+				#Rails.logger.info(context.to_yaml)
 				return false unless context && context.is_a?(Project)
 
 				if action.is_a?(Hash)
 					return false unless action[:controller] == "issues"
-					return false unless action[:action] == "index" || action[:action] == "show" || action[:action] == 'new'
+					return false unless action[:action] == "index" || action[:action] == "show" || action[:action] == 'new' || action[:action] = 'update'
 				elsif action != :view_issues && action != :edit_issues
-					#Rails.logger.info(action.to_yaml)
-					#Rails.logger.info(context.to_yaml)
 					return false
 				end
 
