@@ -12,6 +12,7 @@ module CoassignPlugin
 					return visible_condition_without_coassignees(user, options)
 				end
 
+				alias_method_chain :notified_users, :coassignees
 				alias_method_chain :visible?, :coassignees
 				alias_method_chain :editable?, :coassignees
 				alias_method_chain :new_statuses_allowed_to, :coassignees
@@ -34,6 +35,21 @@ module CoassignPlugin
 		end
 
 		module InstanceMethods
+			def notified_users_with_coassignees
+				notified = notified_users_without_coassignees
+
+				coassignees = User.find(self.custom_field_value(Setting.plugin_redmine_coassign['coassign_custom_field_id'].to_i))
+				coassignees = coassignees.select {|u| u.active? && u.notify_about?(self)}
+				coassignees.reject! {|user| !visible?(user)}
+				Rails.logger.info(coassignees.to_yaml)
+
+				notified += coassignees
+
+				notified.uniq!
+
+				return notified
+			end
+
 			def is_coassignee?(user=User.current)
 				current_uid = (user || User.current).id
 
