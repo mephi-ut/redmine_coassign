@@ -18,7 +18,7 @@ module CoassignPlugin
 			base.class_eval do
 				unloadable
 
-				def visible_due_coassignees_plugin?(user)
+				def visible_due_coassignees?(user)
 					current_uid = (user || User.current).id
 
 					issues = Issue.joins(:custom_values).where('custom_values.custom_field_id' => Setting.plugin_redmine_coassign['coassign_custom_field_id'].to_i, 'custom_values.value' => current_uid, :project_id => self.id)
